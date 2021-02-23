@@ -1,0 +1,33 @@
+{
+    "author" : "ODDSound",
+    "authors" : [  ],
+    "description" : "Link to the MTS-ESP microtuning library.",
+    "displayname" : "",
+	"extends" : "",
+	"extensible" : 0,
+	"max_version_max" : "none",
+    "max_version_min" : "none",
+    "name" : "MTS-ESP",
+    "os" : {
+        "macintosh" : {
+            "platform" : [ "ia32", "x64" ],
+            "min_version" : "10.7"
+        },
+        "windows" : {
+            "platform" : [ "ia32", "x64" ],
+            "min_version" : "7"
+        }
+    },
+    "package_extra" : {
+        "reverse_domain" : "com.oddsound",
+        "copyright" : "Copyright (c) 2020 ODDSound Ltd."
+    },
+    "tags" : [ "microtuning" ],
+    "version" : "1.0.0",
+    "website" : "http://oddsound.com",
+    "filelist" : 	{
+		"externals" : [ "MTS-ESP.mtof.mxe", "MTS-ESP.mtof.mxe64", "MTS-ESP.mtof.mxo", "MTS-ESP.ftom.mxe", "MTS-ESP.ftom.mxe64", "MTS-ESP.ftom.mxo", "MTS-ESP.mtof~.mxe", "MTS-ESP.mtof~.mxe64", "MTS-ESP.mtof~.mxo" ],
+		"docs" : [ "MTS-ESP.ftom.maxref.xml", "MTS-ESP.mtof.maxref.xml", "MTS-ESP.mtof~.maxref.xml", "mc.MTS-ESP.mtof~.maxref.xml" ],
+		"init" : [ "MTS-ESP-objectmappings.txt" ]
+	}
+}

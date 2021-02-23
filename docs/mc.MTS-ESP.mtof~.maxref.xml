@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml-stylesheet href="./c74ref.xsl" type="text/xsl"?>
+
+<c74object name="mc.MTS-ESP.mtof~" module="" category="">
+
+    <digest>
+        Query retuning for a MIDI note at signal-rate
+    </digest>
+​
+    <description>
+        Query the MTS-ESP library for the frequency and retuning amount for a given MIDI note at signal-rate. If the MIDI channel (1-16) on which the notes were received is known it should be sent to the right inlet, else set right inlet to 0.<br /><br />
+        The left outlet outputs the absolute frequency value.<br /><br />
+        The middle outputs the retuning as a ratio from the standard 12-TET tuning for the given MIDI note number.<br /><br />
+        The right outlet outputs the deviation in semitones from 12-TET tuning.
+    </description>
+    
+    <!--METADATA-->
+	<metadatalist>
+		<metadata name="author">Oliver Cash</metadata>
+		<metadata name="tag">MTS-ESP</metadata>
+		<metadata name="tag">Microtuning</metadata>
+	</metadatalist>
+	
+	<!--INLETS-->
+	<inletlist>
+		<inlet id="0" type="signal/int/float">
+			<digest>MIDI note number</digest>
+		</inlet>
+		<inlet id="1" type="signal/int/float">
+			<digest>MIDI channel if known (1-16), otherwise 0</digest>
+		</inlet>
+	</inletlist>
+	
+	<!--MESSAGES-->
+	<methodlist>
+		<method name="signal">
+			<arglist />
+			<digest>
+				Depends on inlet
+			</digest>
+			<description>
+				In left inlet: A signal representing a MIDI note number value. Note value is converted to <m>int</m> and clamped to range [0,127] before calculating output values.<br /><br />
+				In right inlet: A signal representing the MIDI channel on which the note was received. Channel value is converted to <m>int</m> and clamped to range [0,16]. Set to 0 (default) if unknown, else use 1-16.
+			</description>
+		</method>
+		<method name="int">
+			<arglist />
+			<digest>
+				Depends on inlet
+			</digest>
+			<description>
+				In left inlet: MIDI note number. Numbers can be used instead of signal objects to MIDI note number. If a <m>signal</m> is also connected to the inlet, any numbers sent to the left inlet will be ignored.<br /><br />
+				In right inlet: Set the MIDI channel (1-16) on which the note was received, if known, else set to 0 (default). Numbers can be used instead of signal objects to MIDI channel. If a <m>signal</m> is also connected to the inlet, any numbers sent to the right inlet will be ignored.
+			</description>
+		</method>
+		<method name="float">
+			<arglist />
+			<digest>
+				Depends on inlet
+			</digest>
+			<description>
+				In left or right inlet: converted to <m>int</m>.
+			</description>
+		</method>
+	</methodlist>
+	
+	<!--SEEALSO-->
+	<seealsolist>
+		<seealso name="MTS-ESP.ftom"/>
+		<seealso name="MTS-ESP.mtof"/>
+		<seealso name="MTS-ESP.mtof~"/>
+	</seealsolist>
+	
+</c74object>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml-stylesheet href="./c74ref.xsl" type="text/xsl"?>
+
+<c74object name="MTS-ESP.ftom" module="" category="">
+
+    <digest>
+        Query nearest MIDI note for a given frequency
+    </digest>
+​
+    <description>
+        Query the MTS-ESP library for the MIDI note number nearest to the given frequency. If the destination MIDI channel (1-16) for the note event is known it should be sent to the right inlet, else set right inlet to 0.
+    </description>
+    
+    <!--METADATA-->
+	<metadatalist>
+		<metadata name="author">Oliver Cash</metadata>
+		<metadata name="tag">MTS-ESP</metadata>
+		<metadata name="tag">Microtuning</metadata>
+	</metadatalist>
+	
+	<!--INLETS-->
+	<inletlist>
+		<inlet id="0" type="bang/int/float/list">
+			<digest>Frequency, bang to update outlet using last received frequency value.</digest>
+		</inlet>
+		<inlet id="1" type="int/float/list">
+			<digest>Destination MIDI channel for the note event if known (1-16), otherwise 0.</digest>
+		</inlet>
+	</inletlist>
+	
+	<!--MESSAGES-->
+	<methodlist>
+		<method name="bang">
+			<arglist />
+			<digest>
+				Update outlet using most recent values
+			</digest>
+			<description>
+				In left inlet: Update the outlet using the values for frequency and MIDI channel currently stored.
+			</description>
+		</method>
+		<method name="int">
+			<arglist />
+			<digest>
+				Depends on inlet
+			</digest>
+			<description>
+				In left inlet: Frequency to convert.<br /><br />
+				In right inlet: Set the MIDI channel (1-16) on which the note event will be sent, if known, else set to 0 (default).
+			</description>
+		</method>
+		<method name="float">
+			<arglist />
+			<digest>
+				Depends on inlet
+			</digest>
+			<description>
+				In left inlet: Frequency to convert.<br /><br />
+				In right inlet: converted to <m>int</m>.
+			</description>
+		</method>
+		<method name="list">
+			<arglist />
+			<digest>
+				Depends on inlet
+			</digest>
+			<description>
+				In left inlet: List of frequencies to convert. Will generate corresponding list of MIDI note values.<br /><br />
+				In right inlet: A list of MIDI channels corresponding to destination MIDI channels for notes in output list. Send a single <m>int</m> to specify the same MIDI channel for all notes in the list (1-16, or 0 if unknown).
+			</description>
+		</method>
+	</methodlist>
+	
+	<!--SEEALSO-->
+	<seealsolist>
+		<seealso name="MTS-ESP.mtof"/>
+		<seealso name="MTS-ESP.mtof~"/>
+		<seealso name="mc.MTS-ESP.mtof~"/>
+	</seealsolist>
+	
+</c74object>
