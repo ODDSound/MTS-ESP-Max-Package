@@ -196,6 +196,12 @@ void MTS_ESP_mtof_dsp_perform64(t_MTS_ESP_mtof_dsp *x, t_object *dsp64, double *
     double *out2 = outs[1];
     double *out3 = outs[2];
     
+    double last_freq = 0.;
+    long last_midinote = -1;
+    long last_midichannel = -1;
+    double ratio = 1.;
+    double semitones = 0.;
+    
     while (sampleframes--) {
         long midinote = x->midinote;
         if (x->count1 && in1) {
@@ -207,12 +213,20 @@ void MTS_ESP_mtof_dsp_perform64(t_MTS_ESP_mtof_dsp *x, t_object *dsp64, double *
                 midichannel = clamp_channel_value((long)*in2);
             }
             double freq = MTS_NoteToFrequency(x->mts_client_obj->mts_client, midinote, midichannel);
-            double ratio = 1.;
-            double semitones = 0.;
-            if (MTS_HasMaster(x->mts_client_obj->mts_client)) {
-            	ratio = freq * iet[midinote];
-            	semitones = ratioToSemitones * log(ratio);
+            if (midinote != last_midinote || midichannel != last_midichannel || freq != last_freq) {
+                if (MTS_HasMaster(x->mts_client_obj->mts_client)) {
+                    ratio = freq * iet[midinote];
+                    semitones = ratioToSemitones * log(ratio);
+                }
+                else {
+                    ratio = 1.;
+                    semitones = 0.;
+                }
             }
+            last_freq = freq;
+            last_midinote = midinote;
+            last_midichannel = midichannel;
+            
             *out1++ = freq;
             *out2++ = ratio;
             *out3++ = semitones;

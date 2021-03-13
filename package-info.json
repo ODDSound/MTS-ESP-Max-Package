@@ -27,7 +27,9 @@
     "website" : "http://oddsound.com",
     "filelist" : 	{
 		"externals" : [ "MTS-ESP.mtof.mxe", "MTS-ESP.mtof.mxe64", "MTS-ESP.mtof.mxo", "MTS-ESP.ftom.mxe", "MTS-ESP.ftom.mxe64", "MTS-ESP.ftom.mxo", "MTS-ESP.mtof~.mxe", "MTS-ESP.mtof~.mxe64", "MTS-ESP.mtof~.mxo" ],
+		"help" : [ "MTS-ESP.ftom.maxhelp", "MTS-ESP.mtof.maxhelp", "MTS-ESP.mtof~.maxhelp"],
 		"docs" : [ "MTS-ESP.ftom.maxref.xml", "MTS-ESP.mtof.maxref.xml", "MTS-ESP.mtof~.maxref.xml", "mc.MTS-ESP.mtof~.maxref.xml" ],
-		"init" : [ "MTS-ESP-objectmappings.txt" ]
+		"init" : [ "MTS-ESP-objectmappings.txt" ],
+		"source" : [ "libMTSClient.cpp", "libMTSClient.h", "MTS-ESP.ftom.c", "MTS-ESP.ftom.vcxproj", "MTS-ESP.ftom.xcodeproj", "MTS-ESP.mtof.c", "MTS-ESP.mtof.vcxproj", "MTS-ESP.mtof.xcodeproj", "MTS-ESP.mtof~.c", "MTS-ESP.mtof~.vcxproj", "MTS-ESP.mtof~.xcodeproj" ]
 	}
 }
