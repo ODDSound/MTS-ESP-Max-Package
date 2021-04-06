@@ -1,3 +1,12 @@
+/*
+Copyright (C) 2021 by ODDSound Ltd. info@oddsound.com
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+*/
+
 #ifndef libMTSClient_h
 #define libMTSClient_h
 
@@ -25,7 +34,7 @@ extern "C" {
         double retune_ratio = MTS_RetuningAsRatio(client, midinote, midichannel);
 
      If you don’t have the midi channel, use -1, but supplying the channel allows support for microtonal
-     MIDI controllers with more than 128 keys that use multi-channel keyboard mappings.
+     MIDI controllers with more than 128 keys that use multi-channel tuning tables.
 
      ***NOTE***: Querying retune whilst a note is playing allows the tuning to change along the flight of the note,
      which is the ideal, so do this if you can and as often as possible. Ideally at the same time as processing
@@ -46,18 +55,20 @@ extern "C" {
      The MIDI note number returned is guaranteed to be mapped. If the destination channel for the MIDI note is
      known it should be supplied so that any channel-specific note filtering can be respected.
 
-     To add support for MIDI Tuning System to your plugin (from the MIDI Spec, using sysex), both dump and realtime,
-     implement the above and, when given sysex, call:
+     To add support for MIDI Tuning System (or MTS, from the MIDI specification) SysEx messages to your plugin,
+     implement the above and, when given SysEx, call:
 
         MTS_ParseMIDIData(client, buffer, len); // if buffer is signed char *
      OR
         MTS_ParseMIDIDataU(client, buffer, len); // if buffer is unsigned char *
 
-     If you want to tell the user whether you can see a Master in the session, call:
+     If you want to display to the user whether you can see a Master in the session, call:
 
         bool has_master = MTS_HasMaster(client);
 
-     If you want to tell the user what scale the Master is using, call:
+     It is possible to query the name of the current scale.  This function is necessarily supplied for the case
+     where a client is sending MTS SysEx messages, however it can be used to display the current scale name
+     to the user on your UI too:
 
         const char *name = MTS_GetScaleName(client);
      

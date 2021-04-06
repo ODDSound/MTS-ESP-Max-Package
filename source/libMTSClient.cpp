@@ -1,3 +1,12 @@
+/*
+Copyright (C) 2021 by ODDSound Ltd. info@oddsound.com
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+*/
+
 #include "libMTSClient.h"
 #include <math.h>
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) || defined(__TOS_WIN__) || defined(_MSC_VER)
@@ -151,12 +160,13 @@ struct MTSClient
     {
         supportsMTSSysex=true;
         int sysex_ctr=0,sysex_value=0,note=0,numTunings=0;
-        int bank=-1,prog=0,checksum=0;short int channelBitmap=0;   // maybe we'll want to use these at some point
+        int bank=-1,prog=0,checksum=0,deviceID=0;short int channelBitmap=0;   // maybe we'll want to use these at some point
         eSysexState state=eIgnoring;eMTSFormat format=eBulk;bool realtime=false;
         for (int i=0;i<len;i++)
         {
             unsigned char b=buffer[i];
             if (b==0xF7) {state=eIgnoring;continue;}
+            if (b>0x7F && b!=0xF0) continue;
             switch (state)
             {
                 case eIgnoring:
@@ -166,13 +176,13 @@ struct MTSClient
                     sysex_ctr=0;
                     if (b==0x7E) state=eSysexValid;
                     else if (b==0x7F) {realtime=true;state=eSysexValid;}
-                    else state=eMatchingSysex;   // don't switch to ignoring...Scala adds two bytes here, we need to skip over them
+                    else state=eIgnoring;
                     break;
                 case eSysexValid:
                     switch (sysex_ctr++)    // handle device ID
                     {
-                        case 0: case 2: break;
-                        case 1: case 3: if (b==0x08) state=eMatchingMTS; break; // no extended device IDs have byte 2 set to 0x08, so this is a safe check for MTS message
+                        case 0: deviceID=b; break;
+                        case 1: if (b==0x08) state=eMatchingMTS; break;
                         default: state=eIgnoring; break;    // it's not an MTS message
                     }
                     break;
@@ -220,7 +230,7 @@ struct MTSClient
                     switch (format)
                     {
                         case eBulk:
-                            sysex_value=(sysex_value<<7)|(b&127);
+                            sysex_value=(sysex_value<<7)|b;
                             sysex_ctr++;
                             if ((sysex_ctr&3)==3)
                             {
@@ -230,7 +240,7 @@ struct MTSClient
                             }
                             break;
                         case eSingle:
-                            sysex_value=(sysex_value<<7)|(b&127);
+                            sysex_value=(sysex_value<<7)|b;
                             sysex_ctr++;
                             if (!(sysex_ctr&3))
                             {
@@ -240,11 +250,11 @@ struct MTSClient
                             }
                             break;
                         case eScaleOctOneByte: case eScaleOctOneByteExt:
-                            for (int i=sysex_ctr;i<128;i+=12) updateTuning(i,i,((double)(b&127)-64.)*0.01);
+                            for (int i=sysex_ctr;i<128;i+=12) updateTuning(i,i,((double)b-64.)*0.01);
                             if (++sysex_ctr>=12) state=format==eScaleOctOneByte?eCheckSum:eIgnoring;
                             break;
                         case eScaleOctTwoByte: case eScaleOctTwoByteExt:
-                            sysex_value=(sysex_value<<7)|(b&127);
+                            sysex_value=(sysex_value<<7)|b;
                             sysex_ctr++;
                             if (!(sysex_ctr&1))
                             {
