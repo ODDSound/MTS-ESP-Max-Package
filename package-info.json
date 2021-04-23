@@ -5,6 +5,7 @@
     "displayname" : "",
 	"extends" : "",
 	"extensible" : 0,
+	"homepatcher" : "MTS-ESP_launch.maxpat",
 	"max_version_max" : "none",
     "max_version_min" : "none",
     "name" : "MTS-ESP",
