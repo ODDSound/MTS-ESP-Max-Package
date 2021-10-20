@@ -94,7 +94,7 @@ static inline long clamp_channel_value(long midichannel)
 //////////////////////// tuning constants
 static double et[128];
 static double iet[128];
-const static double ratioToSemitones=17.31234049066756088832;
+const static double ratioToSemitones = 17.31234049066756088832;
 
 void ext_main(void *r)
 {
@@ -254,8 +254,8 @@ void MTS_ESP_mtof_list(t_MTS_ESP_mtof *x, t_symbol *s, long argc, t_atom *argv)
 void MTS_ESP_mtof_set_midinote(t_MTS_ESP_mtof *x, long midinote)
 {
     x->midinote = clamp_note_value(midinote);
-    if (x->midinote_list_size) {
-        x->midinote_list_size = 0;
+    x->midinote_list_size = 0;
+    if (x->midinote_list) {
         free(x->midinote_list);
         x->midinote_list = NULL;
     }
@@ -266,7 +266,7 @@ void MTS_ESP_mtof_update_outlets(t_MTS_ESP_mtof *x)
 {
     MTS_ESP_mtof_check_client(x);
     
-    if (x->midinote_list_size) {
+    if (x->midinote_list_size && x->midinote_list) {
         t_atom *out_list_play = (t_atom*)malloc(sizeof(t_atom) * x->midinote_list_size);
         t_atom *out_list_semitones = (t_atom*)malloc(sizeof(t_atom) * x->midinote_list_size);
         t_atom *out_list_ratio = (t_atom*)malloc(sizeof(t_atom) * x->midinote_list_size);
@@ -279,7 +279,7 @@ void MTS_ESP_mtof_update_outlets(t_MTS_ESP_mtof *x)
         for (i = 0; i < x->midinote_list_size; i++) {
             if (x->mts_client_obj) {
                 long midichannel = x->midichannel;
-                if (i < x->midichannel_list_size) {
+                if (i < x->midichannel_list_size && x->midichannel_list) {
                     midichannel = *(x->midichannel_list + i);
                 }
                 double freq = MTS_NoteToFrequency(x->mts_client_obj->mts_client, *(x->midinote_list + i), midichannel);
@@ -347,6 +347,21 @@ void MTS_ESP_mtof_set_midinote_list(t_MTS_ESP_mtof *x, t_symbol *s, long argc, t
     t_atom *out_list_freq = (t_atom*)malloc(sizeof(t_atom) * argc);
     long *midinotes = (long*)malloc(sizeof(long) * argc);
     if (!out_list_play || !out_list_semitones || !out_list_ratio || !out_list_freq || !midinotes) {
+        if (out_list_play) {
+            free(out_list_play);
+        }
+        if (out_list_semitones) {
+            free(out_list_semitones);
+        }
+        if (out_list_ratio) {
+            free(out_list_ratio);
+        }
+        if (out_list_freq) {
+            free(out_list_freq);
+        }
+        if (midinotes) {
+            free(midinotes);
+        }
         return;
     }
     
@@ -372,7 +387,7 @@ void MTS_ESP_mtof_set_midinote_list(t_MTS_ESP_mtof *x, t_symbol *s, long argc, t
         for (i = 0; i < n; i++) {
             if (x->mts_client_obj) {
                 long midichannel = x->midichannel;
-                if (i < x->midichannel_list_size) {
+                if (i < x->midichannel_list_size && x->midichannel_list) {
                     midichannel = *(x->midichannel_list + i);
                 }
                 double freq = MTS_NoteToFrequency(x->mts_client_obj->mts_client, *(midinotes + i), midichannel);
@@ -400,6 +415,9 @@ void MTS_ESP_mtof_set_midinote_list(t_MTS_ESP_mtof *x, t_symbol *s, long argc, t
         outlet_list(x->m_outlet3_ratio, 0L, n, out_list_ratio);
         outlet_list(x->m_outlet4_freq, 0L, n, out_list_freq);
         
+        if (x->midinote_list) {
+            free(x->midinote_list);
+        }
         x->midinote_list = midinotes;
         x->midinote_list_size = n;
     }
@@ -416,10 +434,10 @@ void MTS_ESP_mtof_set_midinote_list(t_MTS_ESP_mtof *x, t_symbol *s, long argc, t
 void MTS_ESP_mtof_set_midichannel(t_MTS_ESP_mtof *x, long midichannel)
 {
     x->midichannel = clamp_channel_value(midichannel);
-    if (x->midichannel_list_size) {
+    x->midichannel_list_size = 0;
+    if (x->midichannel_list) {
         free(x->midichannel_list);
         x->midichannel_list = NULL;
-        x->midichannel_list_size = 0;
     }
 }
 
@@ -451,9 +469,12 @@ void MTS_ESP_mtof_set_midichannel_list(t_MTS_ESP_mtof *x, t_symbol *s, long argc
     }
 
     if (n) {
+        if (x->midichannel_list) {
+            free(x->midichannel_list);
+        }
         x->midichannel_list = midichannels;
         x->midichannel_list_size = n;
-        x->midichannel = x->midichannel_list[x->midichannel_list_size-1];
+        x->midichannel = x->midichannel_list[x->midichannel_list_size - 1];
     }
     else {
         free(midichannels);

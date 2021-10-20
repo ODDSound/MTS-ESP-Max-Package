@@ -11,26 +11,26 @@
     "name" : "MTS-ESP",
     "os" : {
         "macintosh" : {
-            "platform" : [ "ia32", "x64" ],
-            "min_version" : "10.7"
+            "platform" : [ "x64", "arm64" ],
+            "min_version" : "10.11"
         },
         "windows" : {
-            "platform" : [ "ia32", "x64" ],
+            "platform" : [ "x64" ],
             "min_version" : "7"
         }
     },
     "package_extra" : {
         "reverse_domain" : "com.oddsound",
-        "copyright" : "Copyright (c) 2020 ODDSound Ltd."
+        "copyright" : "Copyright (c) 2021 ODDSound Ltd."
     },
     "tags" : [ "microtuning" ],
-    "version" : "1.0.0",
+    "version" : "1.0.1",
     "website" : "http://oddsound.com",
     "filelist" : 	{
-		"externals" : [ "MTS-ESP.mtof.mxe", "MTS-ESP.mtof.mxe64", "MTS-ESP.mtof.mxo", "MTS-ESP.ftom.mxe", "MTS-ESP.ftom.mxe64", "MTS-ESP.ftom.mxo", "MTS-ESP.mtof~.mxe", "MTS-ESP.mtof~.mxe64", "MTS-ESP.mtof~.mxo" ],
+		"externals" : [ "MTS-ESP.mtof.mxe64", "MTS-ESP.mtof.mxo", "MTS-ESP.ftom.mxe64", "MTS-ESP.ftom.mxo", "MTS-ESP.mtof~.mxe64", "MTS-ESP.mtof~.mxo" ],
 		"help" : [ "MTS-ESP.ftom.maxhelp", "MTS-ESP.mtof.maxhelp", "MTS-ESP.mtof~.maxhelp"],
 		"docs" : [ "MTS-ESP.ftom.maxref.xml", "MTS-ESP.mtof.maxref.xml", "MTS-ESP.mtof~.maxref.xml", "mc.MTS-ESP.mtof~.maxref.xml" ],
 		"init" : [ "MTS-ESP-objectmappings.txt" ],
-		"source" : [ "libMTSClient.cpp", "libMTSClient.h", "MTS-ESP.ftom.c", "MTS-ESP.ftom.vcxproj", "MTS-ESP.ftom.xcodeproj", "MTS-ESP.mtof.c", "MTS-ESP.mtof.vcxproj", "MTS-ESP.mtof.xcodeproj", "MTS-ESP.mtof~.c", "MTS-ESP.mtof~.vcxproj", "MTS-ESP.mtof~.xcodeproj" ]
+		"source" : [ "libMTSClient.cpp", "libMTSClient.h", "MTS-ESP.ftom.c", "MTS-ESP.mtof.c", "MTS-ESP.mtof~.c" ]
 	}
 }
