@@ -8,7 +8,7 @@
     </digest>
 ​
     <description>
-        Query the MTS-ESP library for the MIDI note number nearest to the given frequency. If the destination MIDI channel (1-16) for the note event is known it should be sent to the right inlet, else set right inlet to 0.
+        Query the MTS-ESP library for the MIDI note number nearest to the given frequency. MTS-ESP supports multi-channel mappings and the right outlet specifies a MIDI channel for each note number, which should be used if generating note-on messages. If generating note-on messages and the destination MIDI channel is pre-determined, send the MIDI channel to the right inlet (1-16) so that it remains unchanged at the output, else set right inlet to 0.
     </description>
     
     <!--METADATA-->
@@ -24,7 +24,7 @@
 			<digest>Frequency, bang to update outlet using last received frequency value.</digest>
 		</inlet>
 		<inlet id="1" type="int/float/list">
-			<digest>Destination MIDI channel for the note event if known (1-16), otherwise 0.</digest>
+			<digest>Destination MIDI channel for the note-on message if known (1-16), otherwise 0.</digest>
 		</inlet>
 	</inletlist>
 	
@@ -46,7 +46,7 @@
 			</digest>
 			<description>
 				In left inlet: Frequency to convert.<br /><br />
-				In right inlet: Set the MIDI channel (1-16) on which the note event will be sent, if known, else set to 0 (default).
+				In right inlet: Set the MIDI channel (1-16) on which the note-on message will be sent, if known, else set to 0 (default).
 			</description>
 		</method>
 		<method name="float">

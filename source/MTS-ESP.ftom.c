@@ -13,7 +13,8 @@ typedef struct _MTS_ESP_mtsclient
 typedef struct _MTS_ESP_ftom
 {
     t_object ob;			// the object itself (must be first)
-    void *m_outlet1_midinote;
+    void *m_outlet1_midichannel;
+    void *m_outlet2_midinote;
     long m_in;
     void *m_proxy;
     t_MTS_ESP_mtsclient *mts_client_obj;
@@ -40,7 +41,7 @@ void MTS_ESP_ftom_bang(t_MTS_ESP_ftom *x);
 void MTS_ESP_ftom_list(t_MTS_ESP_ftom *x, t_symbol *s, long argc, t_atom *argv);
 
 void MTS_ESP_ftom_set_freq(t_MTS_ESP_ftom *x, double freq);
-void MTS_ESP_ftom_update_outlet(t_MTS_ESP_ftom *x);
+void MTS_ESP_ftom_update_outlets(t_MTS_ESP_ftom *x);
 void MTS_ESP_ftom_set_freq_list(t_MTS_ESP_ftom *x, t_symbol *s, long argc, t_atom *argv);
 void MTS_ESP_ftom_set_midichannel(t_MTS_ESP_ftom *x, long midichannel);
 void MTS_ESP_ftom_set_midichannel_list(t_MTS_ESP_ftom *x, t_symbol *s, long argc, t_atom *argv);
@@ -67,7 +68,7 @@ static void MTS_ESP_ftom_check_client(t_MTS_ESP_ftom *x)
     }
 }
 
-//////////////////////// helper functions to clamp MIDI channel value
+//////////////////////// helper functions to clamp freq and MIDI channel values
 static inline double clamp_freq_value(double freq)
 {
     if (freq > 0) {
@@ -106,7 +107,7 @@ static char freqToNoteET(double freq)
     else n2=n+1*(fabs(freqs[n-1]-freq)<fabs(freqs[n+1]-freq)?-1:1);
     if (n2<n) {int t=n;n=n2;n2=t;}
     double fmid=freqs[n]*pow(2.,0.5*(log(freqs[n2]/freqs[n])/ln2));
-    return freq<fmid?n:n2;
+    return (char)(freq<fmid?n:n2);
 }
 
 void ext_main(void *r)
@@ -161,7 +162,14 @@ void MTS_ESP_ftom_assist(t_MTS_ESP_ftom *x, void *b, long m, long a, char *s)
         }
     }
     else {
-        strncpy_zero(s, "MIDI note number out", 512);
+        switch (a) {
+            case 0:
+                strncpy_zero(s, "MIDI note number out", 512);
+                break;
+            case 1:
+                strncpy_zero(s, "MIDI channel out", 512);
+                break;
+        }
     }
 }
 
@@ -177,7 +185,8 @@ void *MTS_ESP_ftom_new(t_symbol *s)
         x->freq_list = NULL;
         x->freq_list_size = 0;
         x->m_proxy = proxy_new((t_object *)x, 1, &x->m_in);
-        x->m_outlet1_midinote = outlet_new((t_object *)x, NULL);
+        x->m_outlet1_midichannel = outlet_new((t_object *)x, NULL);
+        x->m_outlet2_midinote = outlet_new((t_object *)x, NULL);
 	}
 	return (x);
 }
@@ -227,7 +236,7 @@ void MTS_ESP_ftom_float(t_MTS_ESP_ftom *x, double n)
 void MTS_ESP_ftom_bang(t_MTS_ESP_ftom *x)
 {
     if (proxy_getinlet((t_object *)x) == 0) {
-        MTS_ESP_ftom_update_outlet(x);
+        MTS_ESP_ftom_update_outlets(x);
     }
 }
 
@@ -251,42 +260,75 @@ void MTS_ESP_ftom_set_freq(t_MTS_ESP_ftom *x, double freq)
         free(x->freq_list);
         x->freq_list = NULL;
     }
-    MTS_ESP_ftom_update_outlet(x);
+    MTS_ESP_ftom_update_outlets(x);
 }
 
-void MTS_ESP_ftom_update_outlet(t_MTS_ESP_ftom *x)
+void MTS_ESP_ftom_update_outlets(t_MTS_ESP_ftom *x)
 {
     MTS_ESP_ftom_check_client(x);
     
     if (x->freq_list_size && x->freq_list) {
+        t_atom *out_list_midichannel = (t_atom*)malloc(sizeof(t_atom) * x->freq_list_size);
         t_atom *out_list_midinote = (t_atom*)malloc(sizeof(t_atom) * x->freq_list_size);
-        if (!out_list_midinote) {
+        if (!out_list_midichannel || !out_list_midinote) {
+            if (out_list_midichannel) {
+                free(out_list_midichannel);
+            }
+            if (out_list_midinote) {
+                free(out_list_midinote);
+            }
             return;
         }
         
         long i;
         for (i = 0; i < x->freq_list_size; i++) {
+            long midichannel = x->midichannel;
+            if (i < x->midichannel_list_size && x->midichannel_list) {
+                midichannel = *(x->midichannel_list + i);
+            }
             if (x->mts_client_obj) {
-                long midichannel = x->midichannel;
-                if (i < x->midichannel_list_size && x->midichannel_list) {
-                    midichannel = *(x->midichannel_list + i);
+                if (midichannel&~15) {
+                    char chan = 0;
+                    atom_setlong(out_list_midinote + i, MTS_FrequencyToNoteAndChannel(x->mts_client_obj->mts_client, *(x->freq_list + i), &chan));
+                    midichannel = chan;
                 }
-                outlet_float(x->m_outlet1_midinote, MTS_FrequencyToNote(x->mts_client_obj->mts_client, *(x->freq_list + i), midichannel));
+                else {
+                    atom_setlong(out_list_midinote + i, MTS_FrequencyToNote(x->mts_client_obj->mts_client, *(x->freq_list + i), midichannel));
+                }
+                atom_setlong(out_list_midichannel + i, midichannel + 1);
             }
             else {
-                outlet_float(x->m_outlet1_midinote, freqToNoteET(*(x->freq_list + i)));
+                if (midichannel&~15) midichannel = 0;
+                atom_setlong(out_list_midinote + i, freqToNoteET(*(x->freq_list + i)));
+                atom_setlong(out_list_midichannel + i, midichannel + 1);
             }
         }
-        
-        outlet_list(x->m_outlet1_midinote, 0L, x->freq_list_size, out_list_midinote);
+        outlet_list(x->m_outlet1_midichannel, 0L, x->freq_list_size, out_list_midichannel);
+        outlet_list(x->m_outlet2_midinote, 0L, x->freq_list_size, out_list_midinote);
+        free(out_list_midichannel);
         free(out_list_midinote);
     }
     else {
         if (x->mts_client_obj) {
-            outlet_float(x->m_outlet1_midinote, MTS_FrequencyToNote(x->mts_client_obj->mts_client, x->freq, x->midichannel));
+            if (x->midichannel&~15) {
+                char chan = 0;
+                long note = MTS_FrequencyToNoteAndChannel(x->mts_client_obj->mts_client, x->freq, &chan);
+                outlet_int(x->m_outlet1_midichannel, chan + 1);
+                outlet_int(x->m_outlet2_midinote, note);
+            }
+            else {
+                outlet_int(x->m_outlet1_midichannel, x->midichannel + 1);
+                outlet_int(x->m_outlet2_midinote, MTS_FrequencyToNote(x->mts_client_obj->mts_client, x->freq, x->midichannel));
+            }
         }
         else {
-            outlet_float(x->m_outlet1_midinote, freqToNoteET(x->freq));
+            if (x->midichannel&~15) {
+                outlet_int(x->m_outlet1_midichannel, 1);
+            }
+            else {
+                outlet_int(x->m_outlet1_midichannel, x->midichannel + 1);
+            }
+            outlet_int(x->m_outlet2_midinote, freqToNoteET(x->freq));
         }
     }
 }
@@ -296,10 +338,14 @@ void MTS_ESP_ftom_set_freq_list(t_MTS_ESP_ftom *x, t_symbol *s, long argc, t_ato
     if (!argc) return;
     
     MTS_ESP_ftom_check_client(x);
-    
+
+    t_atom *out_list_midichannel = (t_atom*)malloc(sizeof(t_atom) * argc);
     t_atom *out_list_midinote = (t_atom*)malloc(sizeof(t_atom) * argc);
     double *freqs = (double*)malloc(sizeof(double) * argc);
-    if (!out_list_midinote || !freqs) {
+    if (!out_list_midichannel || !out_list_midinote || !freqs) {
+        if (out_list_midichannel) {
+            free(out_list_midichannel);
+        }
         if (out_list_midinote) {
             free(out_list_midinote);
         }
@@ -329,18 +375,29 @@ void MTS_ESP_ftom_set_freq_list(t_MTS_ESP_ftom *x, t_symbol *s, long argc, t_ato
     
     if (n) {
         for (i = 0; i < n; i++) {
+            long midichannel = x->midichannel;
+            if (i < x->midichannel_list_size && x->midichannel_list) {
+                midichannel = *(x->midichannel_list + i);
+            }
             if (x->mts_client_obj) {
-                long midichannel = x->midichannel;
-                if (i < x->midichannel_list_size && x->midichannel_list) {
-                    midichannel = *(x->midichannel_list + i);
+                if (midichannel&~15) {
+                    char chan = 0;
+                    atom_setlong(out_list_midinote + i, MTS_FrequencyToNoteAndChannel(x->mts_client_obj->mts_client, *(freqs + i), &chan));
+                    midichannel = chan;
                 }
-                atom_setlong(out_list_midinote + i, MTS_FrequencyToNote(x->mts_client_obj->mts_client, *(freqs + i), midichannel));
+                else {
+                    atom_setlong(out_list_midinote + i, MTS_FrequencyToNote(x->mts_client_obj->mts_client, *(freqs + i), midichannel));
+                }
+                atom_setlong(out_list_midichannel + i, midichannel + 1);
             }
             else {
+                if (midichannel&~15) midichannel = 0;
                 atom_setlong(out_list_midinote + i, freqToNoteET(*(freqs + i)));
+                atom_setlong(out_list_midichannel + i, midichannel + 1);
             }
         }
-        outlet_list(x->m_outlet1_midinote, 0L, n, out_list_midinote);
+        outlet_list(x->m_outlet1_midichannel, 0L, n, out_list_midichannel);
+        outlet_list(x->m_outlet2_midinote, 0L, n, out_list_midinote);
         if (x->freq_list) {
             free(x->freq_list);
         }
@@ -351,6 +408,7 @@ void MTS_ESP_ftom_set_freq_list(t_MTS_ESP_ftom *x, t_symbol *s, long argc, t_ato
         free(freqs);
     }
     
+    free(out_list_midichannel);
     free(out_list_midinote);
 }
 

@@ -35,7 +35,7 @@ It is advised to use MTS-ESP.mtof when a note on is received to check whether it
 
 ## MTS-ESP.ftom
 
-An MTS-ESP.ftom object is supplied for converting a frequency to a MIDI note value.  The output note value is guaranteed to be mapped in the master plugin.
+An MTS-ESP.ftom object is supplied for converting a frequency to a MIDI note value.  The note value is output as an integer and is guaranteed to be mapped in the master plugin.  MTS-ESP supports multi-channel mappings and a second outlet provides the MIDI channel on which the note should be sent, if the device supports it.
 
 
 For any queries, assistance or bug reports contact tech@oddsound.com.

@@ -24,7 +24,7 @@
         "copyright" : "Copyright (c) 2021 ODDSound Ltd."
     },
     "tags" : [ "microtuning" ],
-    "version" : "1.0.1",
+    "version" : "1.0.2",
     "website" : "http://oddsound.com",
     "filelist" : 	{
 		"externals" : [ "MTS-ESP.mtof.mxe64", "MTS-ESP.mtof.mxo", "MTS-ESP.ftom.mxe64", "MTS-ESP.ftom.mxo", "MTS-ESP.mtof~.mxe64", "MTS-ESP.mtof~.mxo" ],

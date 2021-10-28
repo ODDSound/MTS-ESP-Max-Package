@@ -272,6 +272,18 @@ void MTS_ESP_mtof_update_outlets(t_MTS_ESP_mtof *x)
         t_atom *out_list_ratio = (t_atom*)malloc(sizeof(t_atom) * x->midinote_list_size);
         t_atom *out_list_freq = (t_atom*)malloc(sizeof(t_atom) * x->midinote_list_size);
         if (!out_list_play || !out_list_semitones || !out_list_ratio || !out_list_freq) {
+            if (out_list_play) {
+                free(out_list_play);
+            }
+            if (out_list_semitones) {
+                free(out_list_semitones);
+            }
+            if (out_list_ratio) {
+                free(out_list_ratio);
+            }
+            if (out_list_freq) {
+                free(out_list_freq);
+            }
             return;
         }
         
@@ -289,7 +301,7 @@ void MTS_ESP_mtof_update_outlets(t_MTS_ESP_mtof *x)
 					ratio = freq * iet[*(x->midinote_list + i)];
 					semitones = ratioToSemitones * log(ratio);
 				}
-                atom_setlong(out_list_play+i, !MTS_ShouldFilterNote(x->mts_client_obj->mts_client, *(x->midinote_list + i), midichannel));
+                atom_setlong(out_list_play + i, !MTS_ShouldFilterNote(x->mts_client_obj->mts_client, *(x->midinote_list + i), midichannel));
                 atom_setfloat(out_list_semitones + i, semitones);
                 atom_setfloat(out_list_ratio + i, ratio);
                 atom_setfloat(out_list_freq + i, freq);
